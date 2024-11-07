@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ホワイトボード with テキスト入力</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f5f5f5;
+      }
+      canvas {
+        border: 2px solid #000;
+        background-color: #fff;
+        cursor: crosshair;
+      }
+      .controls {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+      }
+      .text-input {
+        position: absolute;
+        display: none;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ホワイトボード</h1>
+      <hr />
+    </header>
+    <div class="controls">
+      <button onclick="clearCanvas()">クリア</button>
+    </div>
+    <canvas id="whiteboard" width="800" height="600"></canvas>
+    <input
+      type="text"
+      id="textInput"
+      class="text-input"
+      placeholder="テキストを入力"
+    />
+
+    <script>
+      const canvas = document.getElementById("whiteboard");
+      const ctx = canvas.getContext("2d");
+      const textInput = document.getElementById("textInput");
+      let drawing = false;
+
+      // 描画を開始する関数
+      function startDrawing(event) {
+        drawing = true;
+        draw(event); // 初期位置にドットを描画
+      }
+
+      // 描画を停止する関数
+      function stopDrawing() {
+        drawing = false;
+        ctx.beginPath(); // 新しいパスを開始
+      }
+
+      // 描画を行う関数
+      function draw(event) {
+        if (!drawing) return;
+
+        ctx.lineWidth = 3; // 線の太さ
+        ctx.lineCap = "round"; // 線の先端を丸く
+        ctx.strokeStyle = "#000"; // 線の色
+
+        ctx.lineTo(
+          event.clientX - canvas.offsetLeft,
+          event.clientY - canvas.offsetTop
+        );
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(
+          event.clientX - canvas.offsetLeft,
+          event.clientY - canvas.offsetTop
+        );
+      }
+
+      // テキストを入力する関数
+      function addText(event) {
+        const x = event.clientX;
+        const y = event.clientY;
+        textInput.style.left = `${x}px`;
+        textInput.style.top = `${y}px`;
+        textInput.value = "";
+        textInput.style.display = "block";
+        textInput.focus();
+
+        // テキストボックスのEnterキーの処理
+        textInput.onkeypress = function (e) {
+          if (e.key === "Enter") {
+            const text = textInput.value;
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#000";
+            ctx.fillText(text, x - canvas.offsetLeft, y - canvas.offsetTop);
+            textInput.style.display = "none";
+          }
+        };
+      }
+
+      // キャンバスをクリアする関数
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // イベントリスナーを追加
+      canvas.addEventListener("mousedown", startDrawing);
+      canvas.addEventListener("mouseup", stopDrawing);
+      canvas.addEventListener("mousemove", draw);
+      canvas.addEventListener("mouseleave", stopDrawing);
+      canvas.addEventListener("dblclick", addText); // ダブルクリックでテキスト入力
+    </script>
+  </body>
+</html>
